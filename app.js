@@ -1,21 +1,43 @@
-const express = require('express')
+const express = require('express');
+const morgan = require('morgan');
+const mongoose = require('mongoose');
+const blogRoutes = require('./routes/blogRoutes');
 
-const app = express()
 
-app.listen(3000)
+const app = express();
 
-app.get('/', (req, res) =>{
-    // res.send('<p>hello there</p>')
-    res.sendFile('./views/index.html', {root:__dirname})
-})
-app.get('/about', (req, res) =>{
-    // res.send('<p>whats this about</p>')
-    res.sendFile('./views/about.html',{root:__dirname})
-})
 
-app.get('/about-us', (req, res) =>{
-    res.redirect('/about')
-})
-app.use((req, res) =>{
-    res.sendFile('./views/404.html', {root:__dirname})
-})
+mongodb+srv://Onilink:6TulhRoUDG9jzLUc@cluster0.yr7sg.mongodb.net/?retryWrites=true&w=majority
+
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(result => app.listen(3000))
+  .catch(err => console.log(err));
+
+
+app.set('view engine', 'ejs');
+
+
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+app.use((req, res, next) => {
+  res.locals.path = req.path;
+  next();
+});
+
+
+app.get('/', (req, res) => {
+  res.redirect('/blogs');
+});
+
+app.get('/about', (req, res) => {
+  res.render('about', { title: 'About' });
+});
+
+
+app.use('/blogs', blogRoutes);
+
+
+app.use((req, res) => {
+  res.status(404).render('404', { title: '404' });
+});
